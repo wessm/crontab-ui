@@ -13,6 +13,37 @@ var busboy = require('connect-busboy'); // for file upload
 // include the routes
 var routes = require("./routes").routes;
 
+
+// https://stackoverflow.com/questions/23616371/basic-http-authentication-with-node-and-express-4
+//
+app.use((req, res, next) => {
+
+  // -----------------------------------------------------------------------
+  // authentication middleware
+
+  const auth = {login: 'mantlelabs', password: 'mantlecron'} // change this
+
+  // parse login and password from headers
+  const b64auth = (req.headers.authorization || '').split(' ')[1] || ''
+  const [login, password] = new Buffer(b64auth, 'base64').toString().split(':')
+
+  // Verify login and password are set and correct
+  if (!login || !password || login !== auth.login || password !== auth.password) {
+    res.set('WWW-Authenticate', 'Basic realm="401"') // change this
+    res.status(401).send('Authentication required.') // custom message
+    return
+  }
+
+  // -----------------------------------------------------------------------
+  // Access granted...
+  next()
+
+})
+
+
+
+
+
 // set the view engine to ejs
 app.set('view engine', 'ejs');
 
